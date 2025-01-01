@@ -72,8 +72,8 @@ function RecyclePage() {
   let model = undefined;
 
   async function loadModel() {
-    let location = 'http://localhost:5000/modelfiles/model.json';
-    model = await tf.loadGraphModel(location);
+    // let location = 'http://localhost:5000/modelfiles/model.json';
+    // model = await tf.loadGraphModel(location);
     //const modelUrl =
    //'https://storage.googleapis.com/tfjs-models/savedmodel/mobilenet_v2_1.0_224/model.json';
     //const model = await tf.loadGraphModel(modelUrl);
@@ -89,6 +89,7 @@ function RecyclePage() {
     console.log("tf version : ", tf.version);
     console.log("tf.version_core :", tf.version_core);
     const net = await tf.loadGraphModel('http://localhost:5000/modelfiles/model.json');
+    // const net = await tf.loadGraphModel('https://raw.githubusercontent.com/hugozanini/TFJS-object-detection/master/models/kangaroo-detector/model.json') //'http://localhost:5000/modelfiles/model.json');
     // const net = tf.loadGraphModel("https://raw.githubusercontent.com/daved01/tensorflowjs-web-app-demo/main/models/fullyConvolutionalModelTfjs/model.json")
     console.log("Model Version : ", net.inputs.length)
     const outputs = net.outputs;
@@ -127,35 +128,44 @@ function RecyclePage() {
         const img = tf.browser.fromPixels(video);
         const resizedImg = tf.image.resizeBilinear(img, [1280, 1280]);
         const reversedImg = resizedImg.reverse(-1);
-        const castedImg = reversedImg.cast('float32');
+        const castedImg = reversedImg.cast('int32');
         const inputTensor = castedImg.expandDims(0);
-        // const predictions = await net.predict(inputTensor)
+        const predictions = await net.executeAsync(inputTensor)
 
       // const NEW_OD_OUTPUT_TENSORS = ['detected_boxes', 'detected_scores', 'detected_classes'];
-      const predictions = await net.execute(inputTensor);
+      // const predictions = await net.execute(inputTensor);
       console.log("predictions :", predictions);
      
-      /*
-       
-         // Draw mesh
-         const ctx = canvasRef.current.getContext("2d");
+      
+      
+        // Draw mesh
+      const ctx = canvasRef.current.getContext("2d");
+      console.log("0 : ", await predictions[0].array())
+      console.log("1 : ", await predictions[1].array())
+      console.log("2 : ", await predictions[2].array())
+      console.log("3 : ", await predictions[3].array())
+      console.log("4 : ", await predictions[4].array())
+      console.log("5 : ", await predictions[5].array())
+      console.log("6 : ", await predictions[6].array())
 
-        const boxes = await predictions[0].array()
-        const classes = await predictions[0].array()
-        const scores = await predictions[0].array()
+      const boxes = await predictions[1].array()
+      const classes = await predictions[2].array()
+      const scores = await predictions[3].array()
+      console.log("Boxes :", boxes )
+      console.log("classes :", classes )
+      console.log("scores :", scores )
 
-        
+      
 
-         requestAnimationFrame(() => {
-             drawRect(boxes[0], classes[0], scores[0], 0.8, videoWidth, videoHeight, ctx);
-         });
- */
-        // Dispose tensors to release memory
-        img.dispose();
-        resizedImg.dispose();
-        castedImg.dispose();
-        inputTensor.dispose();
-        predictions.dispose();
+      requestAnimationFrame(() => {
+          drawRect(boxes[0], classes[0], scores[0], 0.8, videoWidth, videoHeight, ctx);
+      });
+
+      // Dispose tensors to release memory
+      img.dispose();
+      resizedImg.dispose();
+      castedImg.dispose();
+      inputTensor.dispose();
     
     }
 };

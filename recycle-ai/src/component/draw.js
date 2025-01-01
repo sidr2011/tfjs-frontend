@@ -1,3 +1,4 @@
+/*
 export const drawRect = (detections, ctx) =>{
   // Loop through each prediction
   detections.forEach(prediction => {
@@ -43,7 +44,7 @@ export const drawRect = (detections, ctx) =>{
 }
 
 
-/* 
+*/
 // Define our labelmap
 const labelMap = {
   1:{name:'Aluminium foil', color:'green'},
@@ -90,4 +91,3 @@ export const drawRect = (boxes, classes, scores, threshold, imgWidth, imgHeight,
 }
 
 
- */
