@@ -128,18 +128,50 @@ function RecyclePage() {
         const img = tf.browser.fromPixels(video);
         const resizedImg = tf.image.resizeBilinear(img, [1280, 1280]);
         const reversedImg = resizedImg.reverse(-1);
-        const castedImg = reversedImg.cast('int32');
+        const castedImg = reversedImg.cast('float32');
         const inputTensor = castedImg.expandDims(0);
-        const predictions = await net.executeAsync(inputTensor)
+
+        // Run inference
+    const predictions = net.execute(inputTensor);
+    console.log("predictions :", predictions);
+
+    // Process the output tensors
+    const [boxes, scores, classes] =  predictions;
+    const boxesData = boxes.dataSync();
+    const scoresData = scores.dataSync();
+    const classesData = classes.dataSync();
+
+    // Filter predictions by confidence threshold
+    const confidenceThreshold = 0.5;
+    const validDetections = [];
+    for (let i = 0; i < scoresData.length; i++) {
+        if (scoresData[i] > confidenceThreshold) {
+            validDetections.push({
+                box: boxesData.slice(i * 4, (i + 1) * 4),
+                score: scoresData[i],
+                class: classesData[i]
+            });
+        }
+    }
+
+    // Display results
+    validDetections.forEach(detection => {
+        const [x, y, width, height] = detection.box;
+        const score = detection.score;
+        const className = detection.class;
+
+        // Draw bounding box and label on the image
+        // (Implement your drawing logic here)
+    });
 
       // const NEW_OD_OUTPUT_TENSORS = ['detected_boxes', 'detected_scores', 'detected_classes'];
       // const predictions = await net.execute(inputTensor);
-      console.log("predictions :", predictions);
+      
      
       
       
         // Draw mesh
-      const ctx = canvasRef.current.getContext("2d");
+   /*    const ctx = canvasRef.current.getContext("2d");
       console.log("0 : ", await predictions[0].array())
       console.log("1 : ", await predictions[1].array())
       console.log("2 : ", await predictions[2].array())
@@ -159,7 +191,7 @@ function RecyclePage() {
 
       requestAnimationFrame(() => {
           drawRect(boxes[0], classes[0], scores[0], 0.8, videoWidth, videoHeight, ctx);
-      });
+      }); */
 
       // Dispose tensors to release memory
       img.dispose();
